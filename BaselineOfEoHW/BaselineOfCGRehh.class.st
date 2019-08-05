@@ -1,7 +1,7 @@
 Class {
 	#name : #BaselineOfCGRehh,
 	#superclass : #BaselineOf,
-	#category : #EoHW
+	#category : #BaselineOfEoHW
 }
 
 { #category : #baselines }
