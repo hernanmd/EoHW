@@ -1,11 +1,11 @@
 Class {
-	#name : #BaselineOfCGRehh,
+	#name : #BaselineOfEoHW,
 	#superclass : #BaselineOf,
 	#category : #BaselineOfEoHW
 }
 
 { #category : #baselines }
-BaselineOfCGRehh >> baseline: spec [
+BaselineOfEoHW >> baseline: spec [
 	<baseline>
 	
 	spec for: #'common' do: [
