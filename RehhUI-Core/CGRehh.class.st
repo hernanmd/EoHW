@@ -30,7 +30,8 @@ CGRehh class >> exampleGenerate01 [
 	^ self new
 		outputRehhScript: 'rehh_workflow-all-chr.R';
 		outputShellScript: 'run-rehh-all-chr';
-		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';		
+		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
+				
 		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
 		chrRangeString: '1 29';
 		popCount: 2;
@@ -75,6 +76,40 @@ CGRehh class >> exampleGenerate02 [
 		ies2rsbMethod: 'bilateral';
 
 		writeBifurcationDiagram: false;
+		mrkFoc: 2429;
+		allFoc: 2;
+		nmrkL: 10;
+		nmrkR: 10;
+		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
+
+		generate
+]
+
+{ #category : #'instance creation' }
+CGRehh class >> exampleGenerate03 [
+	" Generate also Bifurcation diagram "
+
+	^ self new
+		outputRehhScript: 'rehh_workflow-all-chr.R';
+		outputShellScript: 'run-rehh-all-chr';
+		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
+			
+		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
+		chrRangeString: '1 29';
+		
+		popCount: 2;
+		popNames: {  
+			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' . 
+			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' };
+		
+		minPercGenoHap: 95;
+		minPercGenoSnp: 50;
+		ies2rsbMethod: 'bilateral';
+
+		" Histogram "
+		writeHistogramFunction: false;
+
+		writeBifurcationDiagram: true;
 		mrkFoc: 2429;
 		allFoc: 2;
 		nmrkL: 10;
@@ -284,7 +319,7 @@ CGRehh >> generateMainRscript [
 		self buildRehhFiles: stream.
 		self writeRehhFunctions: stream.
 		self writeHistogramFunctionTo: stream.
-		"self writeBifurcationDiagramFunction: stream."
+		self writeBifurcationDiagramFunction: stream.
 		self writeRsbFunction: stream ].
 
 ]
