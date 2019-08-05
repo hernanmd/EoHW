@@ -21,7 +21,7 @@ Class {
 		'outputRehhManhattanPlotScript',
 		'ancestralPopNr'
 	],
-	#category : #EoHW
+	#category : #'EoHW-Core'
 }
 
 { #category : #'instance creation' }
