@@ -24,101 +24,6 @@ Class {
 	#category : #'EoHW-Core'
 }
 
-{ #category : #'instance creation' }
-CGRehh class >> exampleGenerate01 [
-
-	^ self new
-		outputRehhScript: 'rehh_workflow-all-chr.R';
-		outputShellScript: 'run-rehh-all-chr';
-		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
-				
-		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
-		chrRangeString: '1 29';
-		popCount: 2;
-		ancestralPopNr: 1;
-		minPercGenoHap: 95;
-		minPercGenoSnp: 50;
-		ies2rsbMethod: 'bilateral';
-		
-		" Histogram "
-		writeHistogramFunction: false;
-
-		" Bifurcation Diagram "
-		writeBifurcationDiagram: false;
-		mrkFoc: 2429;
-		allFoc: 1;
-		nmrkL: 10;
-		nmrkR: 10;
-		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Ancestral Allele';
-
-		popNames: {  
-			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' .
-			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' };
-		generate
-]
-
-{ #category : #'instance creation' }
-CGRehh class >> exampleGenerate02 [
-
-	^ self new
-		outputRehhScript: 'rehh_workflow-all-chr.R';
-		outputShellScript: 'run-rehh-all-chr';
-		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
-		chrRangeString: '1 29';
-		
-		popCount: 2;
-		popNames: {  
-			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' . 
-			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' };
-		
-		minPercGenoHap: 95;
-		minPercGenoSnp: 50;
-		ies2rsbMethod: 'bilateral';
-
-		writeBifurcationDiagram: false;
-		mrkFoc: 2429;
-		allFoc: 2;
-		nmrkL: 10;
-		nmrkR: 10;
-		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
-
-		generate
-]
-
-{ #category : #'instance creation' }
-CGRehh class >> exampleGenerate03 [
-	" Generate also Bifurcation diagram "
-
-	^ self new
-		outputRehhScript: 'rehh_workflow-all-chr.R';
-		outputShellScript: 'run-rehh-all-chr';
-		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
-			
-		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
-		chrRangeString: '1 29';
-		
-		popCount: 2;
-		popNames: {  
-			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' . 
-			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' };
-		
-		minPercGenoHap: 95;
-		minPercGenoSnp: 50;
-		ies2rsbMethod: 'bilateral';
-
-		" Histogram "
-		writeHistogramFunction: false;
-
-		writeBifurcationDiagram: true;
-		mrkFoc: 2429;
-		allFoc: 2;
-		nmrkL: 10;
-		nmrkR: 10;
-		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
-
-		generate
-]
-
 { #category : #accessing }
 CGRehh >> allFoc [
 	^ allFoc
@@ -206,8 +111,8 @@ CGRehh >> generate [
 	self 
 		generateMainRscript;
 		generateManhattanPlotRscript;
-		generateRunAllShellScript
-
+		generateRunAllShellScript.
+	self inform: 'rehh script generated'.
 ]
 
 { #category : #'code generation' }
@@ -293,6 +198,53 @@ CGRehh >> mrkFoc [
 { #category : #accessing }
 CGRehh >> mrkFoc: anObject [
 	mrkFoc := anObject
+]
+
+{ #category : #'code generation' }
+CGRehh >> multiChrMainShellScript [
+
+	^ '#!/bin/sh
+
+# set -x
+#############################
+# Run all chromosomes
+#############################
+
+mac2unix {3}
+
+pop1="{1}"
+pop2="{2}"
+rscript="{3}"
+
+chrrange=$(seq {4})
+
+for i in $chrrange; do
+	Rscript --verbose "$rscript" $i \\
+		"$pop1$i".PHASED.haps \\
+		"$pop1$i".PHASED.sample \\
+		"$pop2$i".PHASED.haps \\
+		"$pop2$i".PHASED.sample
+done ' format: { 
+			self popNames first . 
+			self popNames second . 
+			self outputRehhScript . 
+			self chrRangeString }
+]
+
+{ #category : #'code generation' }
+CGRehh >> multiChrManhattanPlotScript [
+
+	^ String streamContents: [ : stream | 
+			stream 
+				cr;
+				nextPutAll: 'mac2unix ';
+				nextPutAll: self outputRehhManhattanPlotScript;
+				cr;
+				nextPutAll: 'Rscript --verbose ';
+				nextPutAll: self outputRehhManhattanPlotScript ]
+
+	
+
 ]
 
 { #category : #accessing }
@@ -391,11 +343,11 @@ CGRehh >> scanHHPop: popNr [
 hap{1} <- data2haplohh(
         hap_file = tableHap{1}, 
         map_file = mapFileName{4}, 
-        # haplotype.in.columns = TRUE , 
-        recode.allele = TRUE, 
+    		# haplotype.in.columns = TRUE , 
+  			# recode.allele = TRUE, 
 			# min_maf = 0.1,
-        min_perc_geno.hap = {2},
-        min_perc_geno.snp = {3},
+      		# min_perc_geno.hap = {2},
+        	# min_perc_geno.snp = {3},
         chr.name = args[1])
 ehhScan{1} <- scan_hh(hap{1})
 scanFileName{1} <- paste0("chr-", args[1] , "-rehh_scanhh_pop-{1}.txt") 
@@ -497,31 +449,34 @@ args<-commandArgs(TRUE)
 { #category : #'code generation' }
 CGRehh >> writeManhattanPlotFunction: stream [
 
-	1 to: self popCount do: [ : popNr |
-		stream
-			nextPutAll: ('
-library(dplyr)
+	stream 
+		nextPutAll: 'library(dplyr)
 library(rehh)
 library(ggplot2)
 source("rehh_patches.R")
-			
+'.
+	1 to: self popCount do: [ : popNr |
+		stream
+			nextPutAll: ('
 for(i in {2}) \{
 		hapFile <- paste0("chr-", i , "-rehh_hap_pop-{1}.txt")
 		mapFile <- paste0("chr-", i ,"-rehh_map_pop-{1}.txt")
 		data <- data2haplohh(
 				hap_file = hapFile, 
 				mapFile, 
-				chr.name=i,
+				chr.name=i
 				# haplotype.in.columns = TRUE, 
-				recode.allele = TRUE, 
+				# recode.allele = TRUE, 
 				# min_maf = 0.1,
-				min_perc_geno.hap = {3},
-				min_perc_geno.snp = {4})
-		res<-scan_hh(data)
-		if(i==1) \{
-			wg.res <- res \}
-		else \{ 
-			wg.res <- rbind(wg.res, res) \} \}
+				# min_perc_geno.hap = {3},
+				# min_perc_geno.snp = {4}
+				)
+		res <- scan_hh(data)
+		if (i == 1) 
+			wg.res <- res
+		else 
+			wg.res <- rbind(wg.res, res) 
+		\}
 	wg.ihs <- ihh2ihs(wg.res, freqbin=0.5)
 	
 ihsFileNamePng <- paste0("wgs-rehh_ihs_pop-{1}.png") 
@@ -793,31 +748,8 @@ dev.off()
 { #category : #'code generation' }
 CGRehh >> writeShellScript: stream [
 
-	stream nextPutAll: ('#!/bin/sh
-
-# set -x
-#############################
-# Run all chromosomes
-#############################
-
-mac2unix {3}
-
-pop1="{1}"
-pop2="{2}"
-rscript="{3}"
-
-chrrange=$(seq {4})
-
-for i in $chrrange; do
-	Rscript --verbose "$rscript" $i \\
-		"$pop1$i".PHASED.haps \\
-		"$pop1$i".PHASED.sample \\
-		"$pop2$i".PHASED.haps \\
-		"$pop2$i".PHASED.sample
-done ' format: { 
-	self popNames first . 
-	self popNames second . 
-	self outputRehhScript . 
-	self chrRangeString })
+	stream 
+		nextPutAll: self multiChrMainShellScript;
+		nextPutAll: self multiChrManhattanPlotScript
 
 ]

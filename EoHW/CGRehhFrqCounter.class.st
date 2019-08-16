@@ -4,6 +4,134 @@ Class {
 	#category : #'EoHW-Core'
 }
 
+{ #category : #'instance creation' }
+CGRehhFrqCounter class >> exampleGenerate01 [
+
+	^ self new
+		outputRehhScript: 'rehh_workflow-all-chr.R';
+		outputShellScript: 'run-rehh-all-chr';
+		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
+				
+		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
+		chrRangeString: '1 29';
+		popCount: 2;
+		ancestralPopNr: 1;
+		minPercGenoHap: 95;
+		minPercGenoSnp: 50;
+		ies2rsbMethod: 'bilateral';
+		
+		" Histogram "
+		writeHistogramFunction: false;
+
+		" Bifurcation Diagram "
+		writeBifurcationDiagram: false;
+		mrkFoc: 2429;
+		allFoc: 1;
+		nmrkL: 10;
+		nmrkR: 10;
+		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Ancestral Allele';
+
+		popNames: {  
+			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' .
+			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' };
+		generate
+]
+
+{ #category : #'instance creation' }
+CGRehhFrqCounter class >> exampleGenerate02 [
+
+	^ self new
+		outputRehhScript: 'rehh_workflow-all-chr.R';
+		outputShellScript: 'run-rehh-all-chr';
+		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
+		chrRangeString: '1 29';
+		
+		popCount: 2;
+		popNames: {  
+			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' . 
+			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' };
+		
+		minPercGenoHap: 95;
+		minPercGenoSnp: 50;
+		ies2rsbMethod: 'bilateral';
+
+		writeBifurcationDiagram: false;
+		mrkFoc: 2429;
+		allFoc: 2;
+		nmrkL: 10;
+		nmrkR: 10;
+		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
+
+		generate
+]
+
+{ #category : #'instance creation' }
+CGRehhFrqCounter class >> exampleGenerate03 [
+	" Generate also Bifurcation diagram "
+
+	^ self new
+		outputRehhScript: 'rehh_workflow-all-chr.R';
+		outputShellScript: 'run-rehh-all-chr';
+		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';
+			
+		cwd: 'D:\\Huellas_de_Seleccion\\CBBA+CAl';
+		chrRangeString: '1 29';
+		
+		popCount: 2;
+		popNames: {  
+			'BD_altiplano3-1_geno-maf-CAl-uniqued-chr-' . 
+			'BD_altiplano3-1_geno-maf-CBBA-uniqued-chr-' };
+		
+		minPercGenoHap: 95;
+		minPercGenoSnp: 50;
+		ies2rsbMethod: 'bilateral';
+
+		" Histogram "
+		writeHistogramFunction: false;
+
+		writeBifurcationDiagram: true;
+		mrkFoc: 2429;
+		allFoc: 2;
+		nmrkL: 10;
+		nmrkR: 10;
+		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
+
+		generate
+]
+
+{ #category : #'instance creation' }
+CGRehhFrqCounter class >> exampleGenerate04 [
+
+	self new
+		outputRehhScript: 'rehh_workflow-all-chr.R';
+		outputShellScript: 'run-rehh-all-chr';
+		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';		
+		cwd: 'D:\\Huellas_de_Seleccion\\Altiplano\\PHASED';
+		chrRangeString: '1 29';
+		ancestralPopNr: 1;		
+		
+		popCount: 2;
+		ancestralPopNr: 2;		
+		popNames: {  
+			'BD_altiplano3-1-CAl-geno-maf-exclude-chr' . 
+			'BD_altiplano3-1-CBBA-geno-maf-exclude-chr' };
+		
+		minPercGenoHap: 95;
+		minPercGenoSnp: 50;
+		ies2rsbMethod: 'bilateral';
+
+		writeHistogramFunction: false;
+
+		writeBifurcationDiagram: false;
+		mrkFoc: 2429;
+		allFoc: 2;
+		nmrkL: 10;
+		nmrkR: 10;
+		bifurcationDiagramTitle: 'Bifurcation diagram (XX SNP on BTA1): Derived Allele';
+
+		generate.
+]
+
 { #category : #'code generation' }
 CGRehhFrqCounter >> buildRehhFiles: stream [
 
@@ -49,7 +177,7 @@ finalMap{1} <- as.matrix(cbind(maps{1}, freqsMatrix))
 # haps{1}[which(FR < 0.5),]
 #dim(finalMap)
 
-mapFileName{1} <- paste0("chr-", args[1] ,"rehh_map_pop-{1}.txt")
+mapFileName{1} <- paste0("chr-", args[1] ,"-rehh_map_pop-{1}.txt")
 
 # write to file
 write.table(
@@ -85,11 +213,12 @@ haplo.names <- rep(sample{1}$ID_2, each = 2)
 first.haplos <- seq(from = 1, to = length(haplo.names), by = 2)
 second.haplos <- seq(from = 2, to = length(haplo.names), by = 2)
 
-haplo.names[first.haplos] <- paste0(haplo.names[first.haplos],"_1")
-haplo.names[second.haplos] <- paste0(haplo.names[second.haplos],"_2")
+haplo.reps <- c()
+haplo.reps[first.haplos] <- paste0(haplo.names[first.haplos],"_1")
+haplo.reps[second.haplos] <- paste0(haplo.names[second.haplos],"_2")
 
 haps{1} <- data.frame(haps{1}) %>%
-  mutate(ind = haplo.names) %>%
+  mutate(ind = haplo.reps) %>%
   select(ind, everything())
 # write to file (necessary for rehh for some reason)
 
