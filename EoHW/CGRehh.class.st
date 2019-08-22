@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'cwd',
 		'popCount',
+		'outputDirectory',
 		'outputRehhScript',
 		'outputShellScript',
 		'chrRangeString',
@@ -52,6 +53,11 @@ CGRehh >> bifurcationDiagramTitle [
 { #category : #accessing }
 CGRehh >> bifurcationDiagramTitle: anObject [
 	bifurcationDiagramTitle := anObject
+]
+
+{ #category : #accessing }
+CGRehh >> buildRehhFiles: arg1 [ 
+	^ self subclassResponsibility
 ]
 
 { #category : #'code generation' }
@@ -160,6 +166,16 @@ CGRehh >> ies2rsbMethod: anObject [
 ]
 
 { #category : #'code generation' }
+CGRehh >> installLibsString [
+
+	^ '
+list.of.packages <- c("dplyr", "gplots", "ggplot2", "rehh")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages, repos="http://cran.us.r-project.org")'
+
+]
+
+{ #category : #'code generation' }
 CGRehh >> loadInputFiles: stream [
 
 	1 to: self popCount do: [ : popNr |  
@@ -168,6 +184,16 @@ CGRehh >> loadInputFiles: stream [
 sample{1} <- read.table(args[{3}], header = TRUE, stringsAsFactors = FALSE)
 ' format: { popNr . (2 * popNr) . (2 * popNr + 1)  }) ].
 
+]
+
+{ #category : #'code generation' }
+CGRehh >> loadLibsString [
+
+	^ 'library(dplyr)
+library(rehh)
+library(ggplot2)
+source("rehh_patches.R")
+'
 ]
 
 { #category : #accessing }
@@ -265,6 +291,16 @@ CGRehh >> nmrkR [
 { #category : #accessing }
 CGRehh >> nmrkR: anObject [
 	nmrkR := anObject
+]
+
+{ #category : #accessing }
+CGRehh >> outputDirectory [
+	^ outputDirectory
+]
+
+{ #category : #accessing }
+CGRehh >> outputDirectory: anObject [
+	outputDirectory := anObject
 ]
 
 { #category : #accessing }
@@ -432,29 +468,20 @@ sapply(seq(from = 10, to = 900, by = 10), plotRehhHistogram)
 { #category : #'code generation' }
 CGRehh >> writeLoadLibs: stream [
 
-	stream nextPutAll: ('setwd("{1}")
+	stream 
+		nextPutAll: ('setwd("{1}"' format: { self cwd });
+		nextPutAll: self installLibsString;
+		nextPutAll: self loadLibsString;
+		crlf;
+		nextPutAll: 'args<-commandArgs(TRUE)'
 
-list.of.packages <- c("dplyr", "gplots", "ggplot2", "rehh")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, repos="http://cran.us.r-project.org")
-
-library(dplyr)
-library(rehh)
-library(ggplot2)
-source("rehh_patches.R")
-args<-commandArgs(TRUE)
-' format: { self cwd })
 ]
 
 { #category : #'code generation' }
 CGRehh >> writeManhattanPlotFunction: stream [
 
 	stream 
-		nextPutAll: 'library(dplyr)
-library(rehh)
-library(ggplot2)
-source("rehh_patches.R")
-'.
+		nextPutAll: self loadLibsString.
 	1 to: self popCount do: [ : popNr |
 		stream
 			nextPutAll: ('
