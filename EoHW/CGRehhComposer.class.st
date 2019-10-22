@@ -1,6 +1,10 @@
 Class {
 	#name : #CGRehhComposer,
 	#superclass : #CGRehh,
+	#instVars : [
+		'firstCompPct',
+		'secCompPct'
+	],
 	#category : #'EoHW-Core'
 }
 
@@ -79,12 +83,14 @@ CGRehhComposer class >> exampleGenerate03 [
 		outputRehhManhattanPlotScript: 'rehh_manhattan-wgs.R';		
 		cwd: 'D:\\Huellas_de_Seleccion\\Altiplano\\PHASED';
 		chrRangeString: '1 29';
+		firstCompPct: '5/8';
+		secCompPct: '3/8';
 		ancestralPopNr: 1;		
 		
-		popCount: 2;
+		popCount: 3;
 		popNames: {  
-			'BD_altiplano3-1-CAl-geno-maf-exclude-chr' . 
-			'BD_altiplano3-1-CBBA-geno-maf-exclude-chr' };
+			'Angus-chr' . 
+			'Brangus-A-chr' };
 		
 		minPercGenoHap: 95;
 		minPercGenoSnp: 50;
@@ -106,25 +112,26 @@ CGRehhComposer class >> exampleGenerate03 [
 CGRehhComposer >> buildCompositionFormula: stream [
 
 	stream
-		nextPutAll:('############################
+		nextPutAll: ('############################
 # Apply composition formula
 ############################
 
-compPop1 <- 5/8
-compPop2 <- 3/8
+compPop1 <- {1}
+compPop2 <- {2}
 
-# Iterate simultaneously both Angus and Brahman frequency tables
+# Iterate simultaneously both frequency tables
 f0_snps <- apply(data.frame(al_a1, al_b1), 1, function(row) (compPop1 * row[1]) + (compPop2 * row[2]))
 f1_snps <- apply(data.frame(al_a2, al_b2), 1, function(row) (compPop1 * row[1]) + (compPop2 * row[2]))
 
-maxrow <- function(row) { 
+maxrow <- function(row) \{ 
   if (max(row[1],row[2]) == row[1])
     c(1,0)
   else if (max(row[2],row[1]) == row[2])
         c(0,1)
       else
         c(1,0)
-}
+\}
+
 # Iterate simultaneously both frequency tables and assign 1 to maximum of each row
 map <- apply(
     data.frame(f0_snps, f1_snps), 
@@ -133,7 +140,11 @@ map <- apply(
 map <- t(map)
 
 # Iterate simultaneously both frequency tables and assign 1 to maximum of each row
-# map <- apply(data.frame(f0_snps, f1_snps), 1, function(row) ifelse(max(row[1],row[2]),1,0))').
+# map <- apply(data.frame(f0_snps, f1_snps), 1, function(row) ifelse(max(row[1],row[2]),1,0))' format: 
+	{ 
+	self firstCompPct .
+	self secCompPct 
+	}).
 ]
 
 { #category : #'code generation' }
@@ -147,6 +158,16 @@ CGRehhComposer >> buildRehhFiles: stream [
 		stream 
 			nextPutAll: (self mapGenRCode: popNr);
 			nextPutAll: (self mapFormatRCode: popNr) ].
+]
+
+{ #category : #accessing }
+CGRehhComposer >> firstCompPct [
+	^ firstCompPct
+]
+
+{ #category : #accessing }
+CGRehhComposer >> firstCompPct: anObject [
+	firstCompPct := anObject
 ]
 
 { #category : #'code generation' }
@@ -238,4 +259,14 @@ write.table(
     col.names = FALSE, 
     row.names = FALSE)
 ' format: { popNr }
+]
+
+{ #category : #accessing }
+CGRehhComposer >> secCompPct [
+	^ secCompPct
+]
+
+{ #category : #accessing }
+CGRehhComposer >> secCompPct: anObject [
+	secCompPct := anObject
 ]

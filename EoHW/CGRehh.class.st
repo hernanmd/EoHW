@@ -362,6 +362,34 @@ CGRehh >> popNames: anObject [
 	popNames := anObject
 ]
 
+{ #category : #'code generation' }
+CGRehh >> rsbPop: popNr [
+
+	^ '#######################
+# Rsb
+#######################
+
+rsb <- ies2rsb(ehhScan{3}, ehhScan{4}, method="{2}")
+rsbTableName <- paste0("chr-", args[1] , "-rehh_rsb-{2}.csv")
+write.table(rsb, file = rsbTableName)
+#View(rsb)
+
+rsbPngName <- paste0("chr-", args[1] , "-rehh_rsb-{3}-{4}-{2}.png")
+png(filename = rsbPngName)
+rsbTitle <- paste0("Rsb chr " , args[1])
+rsbplot_mod(rsb, main = rsbTitle)
+dev.off()
+
+rsbSvgName <- paste0("chr-", args[1] , "-rehh_rsb-{3}-{4}-{2}.svg")
+svg(filename = rsbSvgName)
+rsbTitle <- paste0("Rsb chr " , args[1])
+rsbplot_mod(rsb, main = rsbTitle)
+dev.off()
+' format: { self ies2rsbMethod . self ies2rsbMethod . popNr . (popNr + 1) }
+
+
+]
+
 { #category : #'rehh functions' }
 CGRehh >> scanHHPop: popNr [
 
@@ -749,26 +777,8 @@ rsbplot_mod<-function (data, plot.pval = TRUE, ylim.scan = 2, pch = 16, cex = 0.
 { #category : #'code generation' }
 CGRehh >> writeRsbFunction: stream [
 
-	stream 
-		nextPutAll: ('
-#######################
-# Rsb
-#######################
-
-#dim(ehhScan1)
-#dim(ehhScan2)
-
-rsb <- ies2rsb(ehhScan1, ehhScan2, method="{2}")
-rsbTableName <- paste0("chr-", args[1] , "-rehh_rsb-{2}.csv")
-write.table(rsb, file = rsbTableName)
-#View(rsb)
-
-rsbPngName <- paste0("chr-", args[1] , "-rehh_rsb-{2}.png")
-png(filename = rsbPngName)
-rsbTitle <- paste0("Rsb chr " , args[1])
-rsbplot_mod(rsb, main = rsbTitle)
-dev.off()
-' format: { self ies2rsbMethod . self ies2rsbMethod })
+	1 to: self popCount - 1 do: [ : popNr |
+		stream nextPutAll: (self rsbPop: popNr) ].
 
 ]
 
